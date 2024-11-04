@@ -1,6 +1,8 @@
 using System.Xml.Serialization;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -8,11 +10,13 @@ public class PlayerMovement : MonoBehaviour
   private CharacterController characterController;
   private Transform cameraTransform;
 
+    [Header("StatsBase")]
     //movement and jump configuration paramenters
     [SerializeField] private float speed = 5f;
     [SerializeField] private float multiplier = 2f;
     [SerializeField] private float jumpForce = 1.5f;
     [SerializeField] private float gravity = Physics.gravity.y;
+
 
     //Input fields for movement and look actions
     private Vector2 moveInput;
@@ -23,8 +27,15 @@ public class PlayerMovement : MonoBehaviour
     private float verticalVelocity;
     private float verticalRotation = 0;
 
+    [Header("Stamina")]
     //Is Sprinting state
     private bool isSprinting;
+    public Image StaminaBar;
+    public float Stamina, MaxStamina;
+    public float StaminaCost;
+    public float StaminaCharge;
+    private Coroutine recharge;
+
 
     //Camara look sensitivity and max angle to limit vertical rotation
     private float lookSentitivity = 0.5f;
@@ -75,6 +86,11 @@ public class PlayerMovement : MonoBehaviour
     public void Sprint(InputAction.CallbackContext context)
     {
        isSprinting = context.started || context.performed;
+        Stamina -= StaminaCost * Time.deltaTime;
+        if (Stamina < 0) Stamina = 0;
+        StaminaBar.fillAmount = Stamina / MaxStamina;
+        if(recharge !=null) StopCoroutine(recharge);
+        recharge = StartCoroutine(RechargeStamina());
     }
 
     /// <summary>
@@ -117,6 +133,18 @@ public class PlayerMovement : MonoBehaviour
         verticalRotation -= lookInput.y * lookSentitivity;
         verticalRotation = Mathf.Clamp(verticalRotation, -maxLookAngle, maxLookAngle);
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation,0f ,0f);
+
+    }
+    private IEnumerator RechargeStamina()
+    {
+        yield return new WaitForSeconds(1f);
+
+        while (Stamina < MaxStamina)
+        {
+            Stamina += StaminaCharge / 10f;
+            if (Stamina > MaxStamina) Stamina = MaxStamina;
+            yield return new WaitForSeconds(.1f);
+        }
 
     }
 }
