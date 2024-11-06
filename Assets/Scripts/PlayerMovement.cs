@@ -9,6 +9,8 @@ public class PlayerMovement : MonoBehaviour
  //components
   private CharacterController characterController;
   private Transform cameraTransform;
+    private WeaponController weaponController;
+
 
     [Header("StatsBase")]
     //movement and jump configuration paramenters
@@ -30,11 +32,14 @@ public class PlayerMovement : MonoBehaviour
     [Header("Stamina")]
     //Is Sprinting state
     private bool isSprinting;
-    public Image StaminaBar;
-    public float Stamina, MaxStamina;
-    public float StaminaCost;
-    public float StaminaCharge;
-    private Coroutine recharge;
+    private bool isMoving;
+
+    public Slider staminaBar;
+    public float stamina;
+    public float maxStamina;
+    public float staminaCost;//staminaDrainRate
+    public float staminaCharge;//staminaRegenRate
+
 
 
     //Camara look sensitivity and max angle to limit vertical rotation
@@ -45,9 +50,17 @@ public class PlayerMovement : MonoBehaviour
     {
             characterController = GetComponent<CharacterController>();
             cameraTransform = Camera.main.transform;
-            //hide cursor
+            weaponController = GetComponent<WeaponController>();
+
 
         Cursor.lockState = CursorLockMode.Locked;
+        stamina = maxStamina;
+
+        if (staminaBar != null)
+        {
+            staminaBar.maxValue = maxStamina;
+            staminaBar.value = stamina;
+        }
     }
 
     private void Update()
@@ -55,6 +68,8 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer();
 
         LookAround();
+
+        HandleStamina();
     }
 
 
@@ -65,6 +80,7 @@ public class PlayerMovement : MonoBehaviour
     public void Move(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
+        isMoving = moveInput != Vector2.zero;
     } 
     public void Look(InputAction.CallbackContext context)
     {
@@ -79,6 +95,11 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
         }
     }
+
+    public void Shoot(InputAction.CallbackContext context)
+    {
+        if (weaponController.CanShoot()) weaponController.Shoot();
+    }
     /// <summary>
     /// Receive Spreint input from Input System and change isSprinting state
     /// </summary>
@@ -86,11 +107,7 @@ public class PlayerMovement : MonoBehaviour
     public void Sprint(InputAction.CallbackContext context)
     {
        isSprinting = context.started || context.performed;
-        Stamina -= StaminaCost * Time.deltaTime;
-        if (Stamina < 0) Stamina = 0;
-        StaminaBar.fillAmount = Stamina / MaxStamina;
-        if(recharge !=null) StopCoroutine(recharge);
-        recharge = StartCoroutine(RechargeStamina());
+        
     }
 
     /// <summary>
@@ -135,16 +152,26 @@ public class PlayerMovement : MonoBehaviour
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation,0f ,0f);
 
     }
-    private IEnumerator RechargeStamina()
+    /// <summary>
+    /// handle stamina bar
+    /// </summary>
+    void HandleStamina()
     {
-        yield return new WaitForSeconds(1f);
-
-        while (Stamina < MaxStamina)
+        if (isSprinting && stamina > 0)
         {
-            Stamina += StaminaCharge / 10f;
-            if (Stamina > MaxStamina) Stamina = MaxStamina;
-            yield return new WaitForSeconds(.1f);
+            stamina -= staminaCost * Time.deltaTime;
+            if (stamina <=0)
+            {
+                stamina = 0;
+                isSprinting = false;
+            }
+        }
+        else if (isSprinting && stamina < maxStamina)
+        {
+            stamina += staminaCharge * Time.deltaTime;
+            stamina = Mathf.Min(stamina, maxStamina);
         }
 
+        staminaBar.value = stamina;
     }
 }
