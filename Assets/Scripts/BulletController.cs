@@ -6,6 +6,11 @@ public class BulletController : MonoBehaviour
     [Header("Bullet Info")]
     [SerializeField] private float activeTime;
 
+    [Header("Particle")]
+    [SerializeField] private GameObject damageParticle;
+    [SerializeField] private GameObject failParticle;
+    
+
 
     private int damage;
 
@@ -30,6 +35,22 @@ public class BulletController : MonoBehaviour
         gameObject.SetActive(false);
 
         //TODO Collision with enemy or player or floot or wall or object
+        if (other.CompareTag("Enemy"))
+        {
+            //Instantiate damageParticle "Blood"
+            GameObject particles = Instantiate(damageParticle,transform.position,Quaternion.identity);
+            //Create Damage on Enemy
+            other.GetComponent<EnemyController>().DamageEnemy(damage);
+        }
+        else if (other.CompareTag("Player"))
+        {
+            GameObject particles = Instantiate(damageParticle, transform.position, Quaternion.identity);
+            //TODO reduce life to Player
+        }
+        else
+        {
+            GameObject particles = Instantiate(failParticle, transform.position, Quaternion.identity);
+        }
 
     }
 

@@ -103,7 +103,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -122,6 +122,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeTime: 3
+  damageParticle: {fileID: 1968586304485042, guid: 9657202e39c688d4eb91456fb669dc46, type: 3}
+  failParticle: {fileID: 1037864198121816, guid: 638c8ca438a11c54987de876e500ed02, type: 3}
 --- !u!54 &-2435786592709886487
 Rigidbody:
   m_ObjectHideFlags: 0

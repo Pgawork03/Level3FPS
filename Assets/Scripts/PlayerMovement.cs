@@ -98,7 +98,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Shoot(InputAction.CallbackContext context)
     {
-        if (weaponController.CanShoot()) weaponController.Shoot();
+        if (weaponController.CanShoot() && context.started) weaponController.Shoot();
     }
     /// <summary>
     /// Receive Spreint input from Input System and change isSprinting state
